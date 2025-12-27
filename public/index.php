@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+file_put_contents(__DIR__.'/debug_uri.log', date('Y-m-d H:i:s') . " URI: " . $_SERVER['REQUEST_URI'] . "\n", FILE_APPEND);
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;
