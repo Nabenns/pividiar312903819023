@@ -21,7 +21,7 @@
 
             <!-- Name -->
             <div class="relative group">
-                <input type="text" id="name" name="name" :value="old('name')" required autofocus autocomplete="name" placeholder=" "
+                <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" placeholder=" "
                     class="block px-4 pb-3 pt-6 w-full text-sm text-white bg-white/5 border-white/10 rounded-xl appearance-none focus:outline-none focus:ring-0 focus:border-brand-orange peer transition-colors" />
                 <label for="name" 
                     class="absolute text-sm text-gray-400 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-brand-orange peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
@@ -37,7 +37,7 @@
 
             <!-- Email Address -->
             <div class="mt-5 relative group">
-                <input type="email" id="email" name="email" :value="old('email')" required autocomplete="username" placeholder=" "
+                <input type="email" id="email" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder=" "
                     class="block px-4 pb-3 pt-6 w-full text-sm text-white bg-white/5 border-white/10 rounded-xl appearance-none focus:outline-none focus:ring-0 focus:border-brand-orange peer transition-colors" />
                 <label for="email" 
                     class="absolute text-sm text-gray-400 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-brand-orange peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text">
