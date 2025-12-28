@@ -26,6 +26,10 @@
                         {{ __('Affiliate') }}
                     </x-nav-link>
 
+                    <x-nav-link :href="route('journal.index')" :active="request()->routeIs('journal.*')" class="text-sm font-medium transition-all duration-300 {{ request()->routeIs('journal.*') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                        {{ __('Journal') }}
+                    </x-nav-link>
+
                     <!-- Tools Dropdown -->
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="right" width="48">
@@ -137,9 +141,27 @@
                 {{ __('Affiliate') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link :href="route('tools.calculator')" :active="request()->routeIs('tools.*')" class="text-gray-300 hover:text-white hover:bg-white/5 border-l-4 border-transparent hover:border-brand-orange transition-all">
-                {{ __('Tools') }}
+            <x-responsive-nav-link :href="route('journal.index')" :active="request()->routeIs('journal.*')" class="text-gray-300 hover:text-white hover:bg-white/5 border-l-4 border-transparent hover:border-brand-orange transition-all">
+                {{ __('Journal') }}
             </x-responsive-nav-link>
+
+            <!-- Tools Mobile Dropdown -->
+            <div x-data="{ toolsOpen: false }">
+                <button @click="toolsOpen = !toolsOpen" class="w-full flex items-center justify-between ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 hover:border-brand-orange transition-all focus:outline-none">
+                    <span>{{ __('Tools') }}</span>
+                    <svg class="h-4 w-4 transform transition-transform duration-200" :class="{'rotate-180': toolsOpen}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div x-show="toolsOpen" class="space-y-1 bg-black/20">
+                    <x-responsive-nav-link :href="route('tools.calculator')" :active="request()->routeIs('tools.calculator')" class="ps-8 text-sm text-gray-400 hover:text-white">
+                        {{ __('Position Calculator') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('tools.calendar')" :active="request()->routeIs('tools.calendar')" class="ps-8 text-sm text-gray-400 hover:text-white">
+                        {{ __('Economic Calendar') }}
+                    </x-responsive-nav-link>
+                </div>
+            </div>
         </div>
 
         <!-- Responsive Settings Options -->

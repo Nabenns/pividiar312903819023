@@ -25,6 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/tools/calculator', [\App\Http\Controllers\ToolsController::class, 'calculator'])->name('tools.calculator');
     Route::get('/tools/calendar', [\App\Http\Controllers\ToolsController::class, 'calendar'])->name('tools.calendar');
+
+    Route::get('/journal', [\App\Http\Controllers\JournalController::class, 'index'])->name('journal.index');
+    Route::post('/journal', [\App\Http\Controllers\JournalController::class, 'store'])->name('journal.store');
 });
 
 Route::post('/coupon/validate', [App\Http\Controllers\CouponController::class, 'validateCoupon'])->name('coupon.validate');
