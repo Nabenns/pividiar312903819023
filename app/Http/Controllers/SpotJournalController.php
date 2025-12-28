@@ -10,17 +10,39 @@ use Illuminate\Support\Facades\Cache;
 
 class SpotJournalController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = SpotTransaction::where('user_id', auth()->id())
+        $query = SpotTransaction::where('user_id', auth()->id());
+
+        // All Time Transactions (for Available Months & All Time Stats)
+        $allTransactions = $query->orderBy('transaction_date', 'desc')->get();
+
+        // Available Months for Dropdown
+        $availableMonths = $allTransactions->sortByDesc('transaction_date')
+            ->groupBy(function ($val) {
+                return \Carbon\Carbon::parse($val->transaction_date)->format('Y-m');
+            })
+            ->keys();
+
+        // Filter by Month (Default to Current Month)
+        $selectedMonth = $request->input('month', now()->format('Y-m'));
+        [$year, $month] = explode('-', $selectedMonth);
+
+        // Filtered Transactions for View
+        $transactions = $query->whereYear('transaction_date', $year)
+            ->whereMonth('transaction_date', $month)
             ->orderBy('transaction_date', 'desc')
             ->get();
 
-        // Calculate Holdings & Avg Price
+        // Calculate Holdings & Avg Price (Based on ALL TIME transactions to be accurate)
+        // Note: Holdings should reflect CURRENT state, not historical state of that month.
+        // However, PnL for the month should be based on Sells in that month.
+        
         $holdings = [];
-        $grouped = $transactions->whereIn('type', ['buy', 'sell'])->groupBy('pair');
+        $grouped = $allTransactions->whereIn('type', ['buy', 'sell'])->groupBy('pair');
 
-        $globalRealizedPnL = 0;
+        $globalRealizedPnL = 0; // All Time
+        $monthlyRealizedPnL = 0; // Selected Month
 
         foreach ($grouped as $pair => $txs) {
             $totalQty = 0;
@@ -38,6 +60,11 @@ class SpotJournalController extends Controller
                     
                     $globalRealizedPnL += $pnl;
 
+                    // Check if this sell happened in the selected month
+                    if ($tx->transaction_date->format('Y-m') === $selectedMonth) {
+                        $monthlyRealizedPnL += $pnl;
+                    }
+                    
                     $totalQty -= $tx->amount;
                     $totalCost -= $costOfSold; // Reduce cost basis
                 }
@@ -53,22 +80,25 @@ class SpotJournalController extends Controller
             }
         }
 
-        $netDeposit = $transactions->where('type', 'deposit')->sum('value') - $transactions->where('type', 'withdraw')->sum('value');
+        $netDeposit = $allTransactions->where('type', 'deposit')->sum('value') - $allTransactions->where('type', 'withdraw')->sum('value');
 
-        $availableCash = $transactions->where('type', 'deposit')->sum('value') 
-            - $transactions->where('type', 'withdraw')->sum('value')
-            - $transactions->where('type', 'buy')->sum('value')
-            + $transactions->where('type', 'sell')->sum('value');
+        $availableCash = $allTransactions->where('type', 'deposit')->sum('value') 
+            - $allTransactions->where('type', 'withdraw')->sum('value')
+            - $allTransactions->where('type', 'buy')->sum('value')
+            + $allTransactions->where('type', 'sell')->sum('value');
 
         $stats = [
             'net_deposit' => $netDeposit,
             'available_cash' => $availableCash,
             'total_holdings_value' => collect($holdings)->sum('total_cost'),
             'realized_pnl' => $globalRealizedPnL,
+            'monthly_realized_pnl' => $monthlyRealizedPnL,
             'account_balance' => $netDeposit + $globalRealizedPnL,
         ];
 
-        return view('journal.spot', compact('transactions', 'holdings', 'stats'));
+        $usdIdrRate = $this->getUsdIdrRate();
+
+        return view('journal.spot', compact('transactions', 'holdings', 'stats', 'availableMonths', 'selectedMonth', 'usdIdrRate'));
     }
 
     public function store(Request $request)
@@ -124,7 +154,7 @@ class SpotJournalController extends Controller
     public function proxyCoinList()
     {
         return Cache::remember('coingecko_coin_list', 3600, function () {
-            $response = Http::get('https://api.coingecko.com/api/v3/coins/markets', [
+            $response = Http::withoutVerifying()->get('https://api.coingecko.com/api/v3/coins/markets', [
                 'vs_currency' => 'usd',
                 'order' => 'market_cap_desc',
                 'per_page' => 100,
@@ -145,18 +175,12 @@ class SpotJournalController extends Controller
         $ids = $request->input('ids');
         if (!$ids) return response()->json([]);
 
-        // Cache key based on requested IDs to avoid caching different combinations separately if possible, 
-        // but for simplicity and since users hold different coins, we might just cache individual coin prices or the specific request.
-        // A better approach for scalability: Cache individual coin prices. 
-        // But for this MVP, caching the specific request string is acceptable if user base is small.
-        // Or even better: Cache the entire 'simple/price' response for a short time if the set of coins is stable per user.
-        
         $cacheKey = 'coingecko_prices_' . md5($ids);
 
         return Cache::remember($cacheKey, 60, function () use ($ids) {
-            $response = Http::get('https://api.coingecko.com/api/v3/simple/price', [
+            $response = Http::withoutVerifying()->get('https://api.coingecko.com/api/v3/simple/price', [
                 'ids' => $ids,
-                'vs_currencies' => 'usd'
+                'vs_currencies' => 'usd,idr'
             ]);
 
             if ($response->successful()) {
@@ -164,6 +188,29 @@ class SpotJournalController extends Controller
             }
 
             return [];
+        });
+    }
+
+    public function getUsdIdrRate()
+    {
+        return Cache::remember('usd_idr_rate', 3600, function () {
+            try {
+                $response = Http::withoutVerifying()->get('http://api.exchangerate.host/live', [
+                    'access_key' => 'aa55aaf9d2dbfd7f06398c0fdcdeaa32',
+                    'currencies' => 'IDR',
+                    'source' => 'USD',
+                    'format' => 1
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    return $data['quotes']['USDIDR'] ?? 16000;
+                }
+            } catch (\Exception $e) {
+                // Log error if needed
+            }
+
+            return 16000; // Fallback rate
         });
     }
 }

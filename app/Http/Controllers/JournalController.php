@@ -7,24 +7,52 @@ use Illuminate\Http\Request;
 class JournalController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
-        $journals = \App\Models\Journal::where('user_id', auth()->id())
+        $query = \App\Models\Journal::where('user_id', auth()->id());
+
+        // All Time Stats (Before Filtering)
+        $allJournals = $query->get();
+        $allWinTrades = $allJournals->where('status', 'win')->count();
+        $allLossTrades = $allJournals->where('status', 'loss')->count();
+        $allTotalWinLoss = $allWinTrades + $allLossTrades;
+
+        $allTimeStats = [
+            'total_trades' => $allJournals->count(),
+            'win_rate' => $allTotalWinLoss > 0 ? ($allWinTrades / $allTotalWinLoss) * 100 : 0,
+            'total_pnl' => $allJournals->sum('pnl_value'),
+            'avg_roi' => $allJournals->count() > 0 ? $allJournals->avg('pnl_percentage') : 0,
+        ];
+
+        // Available Months for Dropdown
+        $availableMonths = $allJournals->sortByDesc('trade_date')
+            ->groupBy(function ($val) {
+                return \Carbon\Carbon::parse($val->trade_date)->format('Y-m');
+            })
+            ->keys();
+
+        // Filter by Month (Default to Current Month)
+        $selectedMonth = $request->input('month', now()->format('Y-m'));
+        [$year, $month] = explode('-', $selectedMonth);
+
+        $journals = $query->whereYear('trade_date', $year)
+            ->whereMonth('trade_date', $month)
             ->orderBy('trade_date', 'desc')
             ->get();
 
+        // Monthly Stats
         $winTrades = $journals->where('status', 'win')->count();
         $lossTrades = $journals->where('status', 'loss')->count();
         $totalWinLoss = $winTrades + $lossTrades;
 
-        $stats = [
+        $monthlyStats = [
             'total_trades' => $journals->count(),
             'win_rate' => $totalWinLoss > 0 ? ($winTrades / $totalWinLoss) * 100 : 0,
             'total_pnl' => $journals->sum('pnl_value'),
             'avg_roi' => $journals->count() > 0 ? $journals->avg('pnl_percentage') : 0,
         ];
 
-        return view('journal.index', compact('journals', 'stats'));
+        return view('journal.index', compact('journals', 'monthlyStats', 'allTimeStats', 'availableMonths', 'selectedMonth'));
     }
 
     public function store(Request $request)

@@ -10,14 +10,27 @@
                     <p class="text-gray-400 mt-1">Track your performance and master the markets.</p>
                 </div>
                 
-                <!-- Tab Switcher -->
-                <div class="bg-black/20 p-1 rounded-xl flex items-center">
-                    <a href="{{ route('journal.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all">
-                        Futures
-                    </a>
-                    <a href="{{ route('journal.spot.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold bg-brand-orange text-white shadow-lg shadow-brand-orange/20 transition-all">
-                        Spot
-                    </a>
+                <div class="flex items-center gap-4">
+                    <!-- Month Selector -->
+                    <form method="GET" action="{{ route('journal.spot.index') }}" class="flex items-center">
+                        <select name="month" onchange="this.form.submit()" class="bg-black/20 border border-white/10 text-white text-sm rounded-xl focus:ring-brand-orange focus:border-brand-orange block w-full py-2 px-4 cursor-pointer hover:bg-white/5 transition-colors">
+                            @foreach($availableMonths as $month)
+                                <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+
+                    <!-- Tab Switcher -->
+                    <div class="bg-black/20 p-1 rounded-xl flex items-center">
+                        <a href="{{ route('journal.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all">
+                            Futures
+                        </a>
+                        <a href="{{ route('journal.spot.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold bg-brand-orange text-white shadow-lg shadow-brand-orange/20 transition-all">
+                            Spot
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -50,53 +63,80 @@
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <!-- Cash Balance -->
                 <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
                     <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Cash Balance</p>
                     <h3 class="text-2xl font-black text-white">
-                        ${{ number_format($stats['available_cash'], 2) }}
+                        Rp {{ number_format($stats['available_cash'] * $usdIdrRate, 0, ',', '.') }}
                     </h3>
+                    <p class="text-xs text-gray-500 mt-1">≈ ${{ number_format($stats['available_cash'], 2) }}</p>
+                </div>
+
+                <!-- Net Deposit -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Net Deposit</p>
+                    <h3 class="text-2xl font-black text-white">
+                        Rp {{ number_format($stats['net_deposit'] * $usdIdrRate, 0, ',', '.') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-1">≈ ${{ number_format($stats['net_deposit'], 2) }}</p>
                 </div>
 
                 <!-- Total Asset -->
                 <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
                     <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Asset</p>
-                    <h3 class="text-2xl font-black text-white" x-text="'$' + formatNumber({{ $stats['account_balance'] }} + totalUnrealizedPnL)">
-                        ${{ number_format($stats['account_balance'], 2) }}
+                    <h3 class="text-2xl font-black text-brand-orange" x-text="'Rp ' + formatNumber(totalCurrentValue * usdIdrRate, 0)">
+                        Rp 0
                     </h3>
-                </div>
-
-                <!-- Realized PnL -->
-                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Realized PnL</p>
-                    <h3 class="text-2xl font-black {{ $stats['realized_pnl'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
-                        {{ $stats['realized_pnl'] >= 0 ? '+' : '' }}${{ number_format($stats['realized_pnl'], 2) }}
-                    </h3>
-                </div>
-
-                <!-- Portfolio Value (Cost) -->
-                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Cost Basis</p>
-                    <h3 class="text-2xl font-black text-blue-400">
-                        ${{ number_format($stats['total_holdings_value'], 2) }}
-                    </h3>
-                </div>
-
-                <!-- Current Portfolio Value -->
-                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Current Value</p>
-                    <h3 class="text-2xl font-black text-white" x-text="'$' + formatNumber(totalCurrentValue)">
-                        $0.00
-                    </h3>
+                    <p class="text-xs text-gray-500 mt-1" x-text="'≈ $' + formatNumber(totalCurrentValue)">≈ $0.00</p>
                 </div>
 
                 <!-- Unrealized PnL -->
                 <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
                     <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Unrealized PnL</p>
-                    <h3 class="text-2xl font-black" :class="totalUnrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400'" x-text="(totalUnrealizedPnL >= 0 ? '+' : '') + '$' + formatNumber(totalUnrealizedPnL)">
-                        $0.00
+                    <h3 class="text-2xl font-black" :class="totalUnrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400'" x-text="(totalUnrealizedPnL >= 0 ? '+' : '') + 'Rp ' + formatNumber(totalUnrealizedPnL * usdIdrRate, 0)">
+                        Rp 0
                     </h3>
+                    <p class="text-xs text-gray-500 mt-1" x-text="'≈ ' + (totalUnrealizedPnL >= 0 ? '+' : '') + '$' + formatNumber(totalUnrealizedPnL)">≈ $0.00</p>
+                </div>
+
+                <!-- Cost Basis -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Cost Basis</p>
+                    <h3 class="text-2xl font-black text-white">
+                        Rp {{ number_format($stats['total_holdings_value'] * $usdIdrRate, 0, ',', '.') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-1">≈ ${{ number_format($stats['total_holdings_value'], 2) }}</p>
+                </div>
+
+                <!-- Current Value -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Current Value</p>
+                    <h3 class="text-2xl font-black text-white" x-text="'Rp ' + formatNumber(totalCurrentValue * usdIdrRate, 0)">
+                        Rp 0
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-1" x-text="'≈ $' + formatNumber(totalCurrentValue)">≈ $0.00</p>
+                </div>
+
+                <!-- Realized PnL (All Time) -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Realized PnL (All Time)</p>
+                    <h3 class="text-2xl font-black {{ $stats['realized_pnl'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
+                        {{ $stats['realized_pnl'] >= 0 ? '+' : '' }}Rp {{ number_format($stats['realized_pnl'] * $usdIdrRate, 0, ',', '.') }}
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-1">≈ {{ $stats['realized_pnl'] >= 0 ? '+' : '' }}${{ number_format($stats['realized_pnl'], 2) }}</p>
+                </div>
+
+                <!-- Monthly Realized PnL -->
+                <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Monthly Realized PnL</p>
+                    <h3 class="text-2xl font-black {{ $stats['monthly_realized_pnl'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
+                        {{ $stats['monthly_realized_pnl'] >= 0 ? '+' : '' }}Rp {{ number_format($stats['monthly_realized_pnl'] * $usdIdrRate, 0, ',', '.') }}
+                    </h3>
+                    <div class="flex justify-between items-end mt-1">
+                        <p class="text-xs text-gray-500">≈ {{ $stats['monthly_realized_pnl'] >= 0 ? '+' : '' }}${{ number_format($stats['monthly_realized_pnl'], 2) }}</p>
+                        <p class="text-xs text-gray-500">{{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('F Y') }}</p>
+                    </div>
                 </div>
             </div>
 
@@ -347,27 +387,13 @@
     </div>
 
     <script>
-        function spotJournalApp(props = {}) {
-                // Chart Instance (Non-reactive)
-                let chart = null;
+        let chart; // Global chart instance
 
-                return {
-                    availableCash: props.availableCash || 0,
-                    buyPercentage: 0,
-                    showModal: false,
-                    isEdit: false,
-                    formAction: '{{ route("journal.spot.store") }}',
-                    form: {
-                        type: 'deposit',
-                        pair: '',
-                        transaction_date: new Date().toISOString().split('T')[0],
-                        price: '',
-                        amount: '',
-                        value: '',
-                        txid: '',
-                        notes: ''
-                    },
-                
+        function spotJournalApp(props = {}) {
+            return {
+                availableCash: props.availableCash || 0,
+                usdIdrRate: props.usdIdrRate || 16000,
+
                 // Dropdown Data
                 searchQuery: '',
                 showDropdown: false,
@@ -385,6 +411,22 @@
                 
                 // Dynamic Coin Map (Symbol -> ID)
                 coinMap: {},
+
+                // Modal & Form Data
+                showModal: false,
+                isEdit: false,
+                formAction: '{{ route("journal.spot.store") }}',
+                form: {
+                    type: 'buy',
+                    pair: '',
+                    transaction_date: new Date().toISOString().split('T')[0],
+                    price: '',
+                    amount: '',
+                    value: '',
+                    txid: '',
+                    notes: ''
+                },
+                buyPercentage: 0,
 
 
 
@@ -667,20 +709,6 @@
                     this.searchQuery = tx.pair; // Pre-fill search
                     this.filterCoins(); // Init dropdown
                     this.showModal = true;
-                },
-
-                resetForm() {
-                    this.form = {
-                        type: 'deposit',
-                        pair: '',
-                        transaction_date: new Date().toISOString().split('T')[0],
-                        price: '',
-                        amount: '',
-                        value: '',
-                        txid: '',
-                        notes: ''
-                    };
-                    this.searchQuery = '';
                 },
 
                 calculateValue() {

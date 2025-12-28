@@ -9,14 +9,27 @@
                     <p class="text-gray-400 mt-1">Track your performance and master the markets.</p>
                 </div>
                 
-                <!-- Tab Switcher -->
-                <div class="bg-black/20 p-1 rounded-xl flex items-center">
-                    <a href="{{ route('journal.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold bg-brand-orange text-white shadow-lg shadow-brand-orange/20 transition-all">
-                        Futures
-                    </a>
-                    <a href="{{ route('journal.spot.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all">
-                        Spot
-                    </a>
+                <div class="flex items-center gap-4">
+                    <!-- Month Selector -->
+                    <form method="GET" action="{{ route('journal.index') }}" class="flex items-center">
+                        <select name="month" onchange="this.form.submit()" class="bg-black/20 border border-white/10 text-white text-sm rounded-xl focus:ring-brand-orange focus:border-brand-orange block w-full py-2 px-4 cursor-pointer hover:bg-white/5 transition-colors">
+                            @foreach($availableMonths as $month)
+                                <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+
+                    <!-- Tab Switcher -->
+                    <div class="bg-black/20 p-1 rounded-xl flex items-center">
+                        <a href="{{ route('journal.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold bg-brand-orange text-white shadow-lg shadow-brand-orange/20 transition-all">
+                            Futures
+                        </a>
+                        <a href="{{ route('journal.spot.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all">
+                            Spot
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -30,57 +43,61 @@
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <!-- Total PnL -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <!-- Monthly PnL -->
                 <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <svg class="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total PnL</p>
-                    <h3 class="text-3xl font-black {{ $stats['total_pnl'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
-                        ${{ number_format($stats['total_pnl'], 2) }}
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Monthly PnL</p>
+                    <h3 class="text-3xl font-black {{ $monthlyStats['total_pnl'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
+                        {{ $monthlyStats['total_pnl'] >= 0 ? '+' : '' }}${{ number_format($monthlyStats['total_pnl'], 2) }}
                     </h3>
+                    <div class="flex justify-between items-end mt-2">
+                        <p class="text-xs text-gray-500">{{ \Carbon\Carbon::createFromFormat('Y-m', $selectedMonth)->format('F Y') }}</p>
+                        <span class="text-xs font-bold text-brand-orange bg-brand-orange/10 px-2 py-1 rounded-lg">
+                            {{ $monthlyStats['total_trades'] }} Trades
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Win Rate -->
+                <!-- Monthly Win Rate -->
                 <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <svg class="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Win Rate</p>
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Monthly Win Rate</p>
                     <h3 class="text-3xl font-black text-white">
-                        {{ number_format($stats['win_rate'], 1) }}%
+                        {{ number_format($monthlyStats['win_rate'], 1) }}%
                     </h3>
+                    <div class="flex justify-between items-end mt-2">
+                        <p class="text-xs text-gray-500">{{ $monthlyStats['total_trades'] }} Trades</p>
+                        <span class="text-xs font-bold {{ $monthlyStats['avg_roi'] >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10' }} px-2 py-1 rounded-lg">
+                            Avg ROI: {{ number_format($monthlyStats['avg_roi'], 2) }}%
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Avg ROI -->
+                <!-- All Time PnL -->
                 <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <svg class="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                    </div>
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Avg. ROI</p>
-                    <h3 class="text-3xl font-black {{ $stats['avg_roi'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
-                        {{ number_format($stats['avg_roi'], 2) }}%
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">All Time PnL</p>
+                    <h3 class="text-3xl font-black {{ $allTimeStats['total_pnl'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
+                        {{ $allTimeStats['total_pnl'] >= 0 ? '+' : '' }}${{ number_format($allTimeStats['total_pnl'], 2) }}
                     </h3>
+                    <div class="flex justify-between items-end mt-2">
+                        <p class="text-xs text-gray-500">Lifetime</p>
+                        <span class="text-xs font-bold text-brand-orange bg-brand-orange/10 px-2 py-1 rounded-lg">
+                            {{ $allTimeStats['total_trades'] }} Trades
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Total Trades -->
+                <!-- All Time Win Rate -->
                 <div class="glass-card p-6 rounded-2xl border border-white/10 bg-[#0A1935]/80 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <svg class="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                    </div>
-                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Trades</p>
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">All Time Win Rate</p>
                     <h3 class="text-3xl font-black text-white">
-                        {{ $stats['total_trades'] }}
+                        {{ number_format($allTimeStats['win_rate'], 1) }}%
                     </h3>
+                    <div class="flex justify-between items-end mt-2">
+                        <p class="text-xs text-gray-500">{{ $allTimeStats['total_trades'] }} Trades</p>
+                        <span class="text-xs font-bold {{ $allTimeStats['avg_roi'] >= 0 ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10' }} px-2 py-1 rounded-lg">
+                            Avg ROI: {{ number_format($allTimeStats['avg_roi'], 2) }}%
+                        </span>
+                    </div>
                 </div>
             </div>
 
