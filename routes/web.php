@@ -28,6 +28,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/journal', [\App\Http\Controllers\JournalController::class, 'index'])->name('journal.index');
     Route::post('/journal', [\App\Http\Controllers\JournalController::class, 'store'])->name('journal.store');
+    Route::put('/journal/{journal}', [\App\Http\Controllers\JournalController::class, 'update'])->name('journal.update');
+    Route::delete('/journal/{journal}', [\App\Http\Controllers\JournalController::class, 'destroy'])->name('journal.destroy');
 });
 
 Route::post('/coupon/validate', [App\Http\Controllers\CouponController::class, 'validateCoupon'])->name('coupon.validate');
