@@ -30,6 +30,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/journal', [\App\Http\Controllers\JournalController::class, 'store'])->name('journal.store');
     Route::put('/journal/{journal}', [\App\Http\Controllers\JournalController::class, 'update'])->name('journal.update');
     Route::delete('/journal/{journal}', [\App\Http\Controllers\JournalController::class, 'destroy'])->name('journal.destroy');
+
+    // Spot Journal Routes
+    Route::get('/journal/spot', [\App\Http\Controllers\SpotJournalController::class, 'index'])->name('journal.spot.index');
+    Route::post('/journal/spot', [\App\Http\Controllers\SpotJournalController::class, 'store'])->name('journal.spot.store');
+    Route::put('/journal/spot/{spot}', [\App\Http\Controllers\SpotJournalController::class, 'update'])->name('journal.spot.update');
+    Route::delete('/journal/spot/{spot}', [\App\Http\Controllers\SpotJournalController::class, 'destroy'])->name('journal.spot.destroy');
 });
 
 Route::post('/coupon/validate', [App\Http\Controllers\CouponController::class, 'validateCoupon'])->name('coupon.validate');

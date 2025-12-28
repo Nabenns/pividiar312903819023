@@ -2,12 +2,25 @@
     <div class="py-12" x-data="journalApp()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            <!-- Header & Stats -->
+            <!-- Header & Tabs -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h2 class="text-3xl font-bold text-white">Trading Journal</h2>
                     <p class="text-gray-400 mt-1">Track your performance and master the markets.</p>
                 </div>
+                
+                <!-- Tab Switcher -->
+                <div class="bg-black/20 p-1 rounded-xl flex items-center">
+                    <a href="{{ route('journal.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold bg-brand-orange text-white shadow-lg shadow-brand-orange/20 transition-all">
+                        Futures
+                    </a>
+                    <a href="{{ route('journal.spot.index') }}" class="px-6 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-all">
+                        Spot
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex justify-end mb-8">
                 <button @click="openModal()" class="bg-brand-orange hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-brand-orange/20 transition-all transform hover:-translate-y-1 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
