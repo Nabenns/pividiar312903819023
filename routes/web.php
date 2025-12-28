@@ -29,4 +29,6 @@ Route::get('/affiliate', [App\Http\Controllers\AffiliateController::class, 'inde
 
 
 
+
+
 require __DIR__.'/auth.php';
