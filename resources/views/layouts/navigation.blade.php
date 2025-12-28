@@ -25,6 +25,34 @@
                     <x-nav-link :href="route('affiliate.index')" :active="request()->routeIs('affiliate.*')" class="text-sm font-medium transition-all duration-300 {{ request()->routeIs('affiliate.*') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
                         {{ __('Affiliate') }}
                     </x-nav-link>
+
+                    <!-- Tools Dropdown -->
+                    <div class="hidden sm:flex sm:items-center sm:ms-6">
+                        <x-dropdown align="right" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-400 hover:text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('tools.*') ? 'text-white' : '' }}">
+                                    <div>Tools</div>
+
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                <div class="bg-[#0b172e] border border-white/10 rounded-xl shadow-2xl overflow-hidden ring-1 ring-black ring-opacity-5">
+                                    <x-dropdown-link :href="route('tools.calculator')" class="text-gray-300 hover:bg-white/5 hover:text-white transition-colors px-4 py-2">
+                                        {{ __('Position Calculator') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('tools.calendar')" class="text-gray-300 hover:bg-white/5 hover:text-white transition-colors px-4 py-2">
+                                        {{ __('Economic Calendar') }}
+                                    </x-dropdown-link>
+                                </div>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
                 </div>
             </div>
 
@@ -107,6 +135,10 @@
 
             <x-responsive-nav-link :href="route('affiliate.index')" :active="request()->routeIs('affiliate.*')" class="text-gray-300 hover:text-white hover:bg-white/5 border-l-4 border-transparent hover:border-brand-orange transition-all">
                 {{ __('Affiliate') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('tools.calculator')" :active="request()->routeIs('tools.*')" class="text-gray-300 hover:text-white hover:bg-white/5 border-l-4 border-transparent hover:border-brand-orange transition-all">
+                {{ __('Tools') }}
             </x-responsive-nav-link>
         </div>
 

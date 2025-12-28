@@ -22,6 +22,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/tools/calculator', [\App\Http\Controllers\ToolsController::class, 'calculator'])->name('tools.calculator');
+    Route::get('/tools/calendar', [\App\Http\Controllers\ToolsController::class, 'calendar'])->name('tools.calendar');
 });
 
 Route::post('/coupon/validate', [App\Http\Controllers\CouponController::class, 'validateCoupon'])->name('coupon.validate');
