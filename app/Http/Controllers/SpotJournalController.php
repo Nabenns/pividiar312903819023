@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\SpotTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class SpotJournalController extends Controller
 {
@@ -117,5 +119,51 @@ class SpotJournalController extends Controller
         if ($spot->user_id !== auth()->id()) abort(403);
         $spot->delete();
         return redirect()->back()->with('success', 'Transaction deleted successfully!');
+    }
+
+    public function proxyCoinList()
+    {
+        return Cache::remember('coingecko_coin_list', 3600, function () {
+            $response = Http::get('https://api.coingecko.com/api/v3/coins/markets', [
+                'vs_currency' => 'usd',
+                'order' => 'market_cap_desc',
+                'per_page' => 100,
+                'page' => 1,
+                'sparkline' => 'false'
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [];
+        });
+    }
+
+    public function proxyPrices(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (!$ids) return response()->json([]);
+
+        // Cache key based on requested IDs to avoid caching different combinations separately if possible, 
+        // but for simplicity and since users hold different coins, we might just cache individual coin prices or the specific request.
+        // A better approach for scalability: Cache individual coin prices. 
+        // But for this MVP, caching the specific request string is acceptable if user base is small.
+        // Or even better: Cache the entire 'simple/price' response for a short time if the set of coins is stable per user.
+        
+        $cacheKey = 'coingecko_prices_' . md5($ids);
+
+        return Cache::remember($cacheKey, 60, function () use ($ids) {
+            $response = Http::get('https://api.coingecko.com/api/v3/simple/price', [
+                'ids' => $ids,
+                'vs_currencies' => 'usd'
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [];
+        });
     }
 }

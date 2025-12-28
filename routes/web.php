@@ -36,6 +36,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/journal/spot', [\App\Http\Controllers\SpotJournalController::class, 'store'])->name('journal.spot.store');
     Route::put('/journal/spot/{spot}', [\App\Http\Controllers\SpotJournalController::class, 'update'])->name('journal.spot.update');
     Route::delete('/journal/spot/{spot}', [\App\Http\Controllers\SpotJournalController::class, 'destroy'])->name('journal.spot.destroy');
+    
+    // Proxy Routes for CoinGecko (Avoid CORS/Rate Limits)
+    Route::get('/journal/spot/proxy/coins', [\App\Http\Controllers\SpotJournalController::class, 'proxyCoinList'])->name('journal.spot.proxy.coins');
+    Route::get('/journal/spot/proxy/prices', [\App\Http\Controllers\SpotJournalController::class, 'proxyPrices'])->name('journal.spot.proxy.prices');
 });
 
 Route::post('/coupon/validate', [App\Http\Controllers\CouponController::class, 'validateCoupon'])->name('coupon.validate');

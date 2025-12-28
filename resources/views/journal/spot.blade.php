@@ -517,8 +517,8 @@
 
                 async fetchCoinList() {
                     try {
-                        // Fetch Top 100 Coins
-                        let response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false');
+                        // Fetch Top 100 Coins via Proxy
+                        let response = await fetch('{{ route("journal.spot.proxy.coins") }}');
                         let data = await response.json();
                         this.allCoins = data;
                         this.filteredCoins = data;
@@ -600,7 +600,7 @@
                     if (ids.length === 0) return;
 
                     try {
-                        let response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`);
+                        let response = await fetch(`{{ route("journal.spot.proxy.prices") }}?ids=${ids.join(',')}`);
                         let data = await response.json();
 
                         this.totalCurrentValue = 0;
