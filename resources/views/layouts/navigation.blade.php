@@ -76,7 +76,7 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 focus:outline-none transition duration-150 ease-in-out">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 focus:outline-none transition duration-150 ease-in-out relative z-50 cursor-pointer">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -87,7 +87,15 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-[#020617] border-b border-white/10">
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="sm:hidden bg-[#020617] border-b border-white/10 absolute w-full z-40"
+         style="display: none;">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-gray-300 hover:text-white hover:bg-white/5 border-l-4 border-transparent hover:border-brand-orange transition-all">
                 {{ __('Dashboard') }}
@@ -95,6 +103,10 @@
             
             <x-responsive-nav-link :href="route('academy.index')" :active="request()->routeIs('academy.*')" class="text-gray-300 hover:text-white hover:bg-white/5 border-l-4 border-transparent hover:border-brand-orange transition-all">
                 {{ __('Academy') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('affiliate.index')" :active="request()->routeIs('affiliate.*')" class="text-gray-300 hover:text-white hover:bg-white/5 border-l-4 border-transparent hover:border-brand-orange transition-all">
+                {{ __('Affiliate') }}
             </x-responsive-nav-link>
         </div>
 

@@ -94,7 +94,8 @@
         </div>
 
         <!-- Navbar -->
-        <nav class="glass transition-all duration-300">
+        <!-- Navbar -->
+        <nav x-data="{ open: false }" class="glass transition-all duration-300 relative">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-20 items-center">
                     <!-- Logo -->
@@ -136,11 +137,42 @@
 
                     <!-- Mobile menu button -->
                     <div class="md:hidden flex items-center">
-                        <button class="text-gray-300 hover:text-white focus:outline-none p-2">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <button @click="open = ! open" class="text-gray-300 hover:text-white focus:outline-none p-2 relative z-50">
+                            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div x-show="open" 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="md:hidden bg-[#020617] border-b border-white/10 absolute w-full z-40"
+                 style="display: none;">
+                <div class="px-4 pt-2 pb-6 space-y-2">
+                    <a href="#curriculum" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5">Curriculum</a>
+                    <a href="#results" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5">Results</a>
+                    <a href="{{ route('pricing') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5">Pricing</a>
+                    
+                    <div class="border-t border-white/10 my-2 pt-2">
+                        @auth
+                            <a href="{{ url('/dashboard') }}" class="block w-full text-center bg-brand-orange hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-bold text-base transition">
+                                Member Area
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5">Log in</a>
+                            <a href="{{ route('register') }}" class="block w-full text-center bg-white text-brand-dark hover:bg-gray-100 px-6 py-3 rounded-lg font-bold text-base transition mt-2">
+                                Join Class
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>

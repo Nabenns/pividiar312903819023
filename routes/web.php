@@ -15,7 +15,7 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ind
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/academy', [\App\Http\Controllers\AcademyController::class, 'index'])->name('academy.index');
     Route::get('/academy/{lesson:slug}', [\App\Http\Controllers\AcademyController::class, 'lesson'])->name('academy.lesson');
 
